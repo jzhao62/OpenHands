@@ -9,6 +9,7 @@ import { useConfig } from "#/hooks/query/use-config";
 import { Sidebar } from "#/components/features/sidebar/sidebar";
 import { WaitlistModal } from "#/components/features/waitlist/waitlist-modal";
 import { AnalyticsConsentFormModal } from "#/components/features/analytics/analytics-consent-form-modal";
+import { SettingsModal } from "#/components/shared/modals/settings/settings-modal";
 
 export function ErrorBoundary() {
   const error = useRouteError();
@@ -44,11 +45,14 @@ export function ErrorBoundary() {
 
 export default function MainApp() {
   const { gitHubToken, clearToken } = useAuth();
-  const { settings } = useUserPrefs();
+  const { settings, settingsAreUpToDate } = useUserPrefs();
 
   const [consentFormIsOpen, setConsentFormIsOpen] = React.useState(
     !localStorage.getItem("analytics-consent"),
   );
+
+  const [aiConfigModalIsOpen, setAiConfigModalIsOpen] =
+    React.useState(!settingsAreUpToDate);
 
   const config = useConfig();
   const {
@@ -79,11 +83,11 @@ export default function MainApp() {
   return (
     <div
       data-testid="root-layout"
-      className="bg-root-primary p-3 h-screen min-w-[1024px] overflow-x-hidden flex gap-3"
+      className="bg-root-primary p-3 h-screen md:min-w-[1024px] overflow-x-hidden flex flex-col md:flex-row gap-3"
     >
       <Sidebar />
 
-      <div className="h-full w-full relative">
+      <div className="h-[calc(100%-50px)] md:h-full w-full relative">
         <Outlet />
       </div>
 
@@ -94,6 +98,13 @@ export default function MainApp() {
       {config.data?.APP_MODE === "oss" && consentFormIsOpen && (
         <AnalyticsConsentFormModal
           onClose={() => setConsentFormIsOpen(false)}
+        />
+      )}
+
+      {aiConfigModalIsOpen && (
+        <SettingsModal
+          onClose={() => setAiConfigModalIsOpen(false)}
+          data-testid="ai-config-modal"
         />
       )}
     </div>
